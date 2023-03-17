@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Add Student</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-xl navbar-dark bg-dark px-5">
+        <a class="navbar-brand">Student Registry</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/add">Add</a></li>
+                <li class="nav-item"><a class="nav-link" href="/update">Update</a></li>
+                <li class="nav-item"><a class="nav-link" href="/delete">Delete</a></li>
+                <li class="nav-item"><a class="nav-link" href="/find">Find</a></li>
+                <li class="nav-item"><a class="nav-link" href="/all">All</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-5 py-3">
+        <h1>Add Student</h1>
+        <form onsubmit="addStudent(); return false">
+            <label for="fname"><b>First name:</b></label><br>
+            <input type="text" id="fname" name="fname" required><br><br>
+
+            <label for="lname"><b>Last name:</b></label><br>
+            <input type="text" id="lname" name="lname" required><br><br>
+
+            <label for="gpa"><b>GPA:</b></label><br>
+            <input type="number" id="gpa" name="gpa" min="0" max="4" step="0.1" required><br><br>
+
+            <label for="enrolled"><b>Currently enrolled?</b></label><br>
+            <input type="radio" id="is-enrolled" name="enrolled" value="YES" required>
+            <label for="is-enrolled">YES</label>
+            <input type="radio" id="is-not-enrolled" name="enrolled" value="NO" required>
+            <label for="is-not-enrolled">NO</label><br><br>
+
+            <input type="submit" value="Submit">
+
+            <div id="response-message"></div>
+        </form>
+    </div>
+
+    <!--AJAX request-->
+    <script>
+        function addStudent() {
+            url = '/students';
+            data = {
+                fname: $(fname).val(),
+                lname: $(lname).val(),
+                gpa: $(gpa).val(),
+                enrolled: $("input[name='enrolled']:checked").val() == "YES" ? true : false
+            };
+
+            $.post(url, data, function (res, status, xhr) {
+                $("#response-message").html(res.message);
+            })
+        }
+    </script>
+
+  <!--Bootstrap Scripts-->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
+</body>
+
+</html>
