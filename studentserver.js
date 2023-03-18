@@ -1,15 +1,16 @@
 //studentserver.js
 
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
 const bodyParser = require('body-parser');
 const fs = require('fs');
-const glob = require("glob")
-const path = require("path")
+const glob = require("glob");
+const path = require("path");
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.set("view engine","ejs");
 
 /** 
 * POST - Creates a student resource.
@@ -35,7 +36,7 @@ app.post('/students', function(req, res) {
   fs.mkdir("students", {recursive:true}, (err) => {
     if (err) {
       console.error(err);
-      return res.status(500).send("Error creating directory")
+      return res.status(500).send("Error creating directory");
     }
   })
 
@@ -207,27 +208,27 @@ app.delete('/students/:id', function(req, res) {
 
 //Frontend endpoints
 app.get("/add", function(req, res) {
-    res.status(200).sendFile(path.join(__dirname, 'public/html/addStudent.html'))
+  res.render(path.join(__dirname, 'views/addStudent.ejs'), {pageName: 'add'})
 })
 
 app.get("/update", function(req, res) {
-  res.status(200).sendFile(path.join(__dirname, 'public/html/updateStudent.html'))
+  res.render(path.join(__dirname, 'views/updateStudent.ejs'), {pageName: 'update'})
 })
 
 app.get("/delete", function(req, res) {
-  res.status(200).sendFile(path.join(__dirname, 'public/html/deleteStudent.html'))
+  res.render(path.join(__dirname, 'views/deleteStudent.ejs'), {pageName: 'delete'})
 })
 
 app.get("/find", function(req, res) {
-  res.status(200).sendFile(path.join(__dirname, 'public/html/displayStudent.html'))
+  res.render(path.join(__dirname, 'views/displayStudent.ejs'), {pageName: 'find'})
 })
 
 app.get("/all", function(req, res) {
-  res.status(200).sendFile(path.join(__dirname, 'public/html/listStudents.html'))
+  res.render(path.join(__dirname, 'views/listStudents.ejs'), {pageName: 'all'})
 })
 
 app.get("/", function(req, res) {
-  res.status(200).sendFile(path.join(__dirname, 'public/html/index.html'))
+  res.render(path.join(__dirname, 'views/index.ejs'), {pageName: 'home'})
 })
 
 app.listen(5678); //start the server
