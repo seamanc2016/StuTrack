@@ -10,6 +10,50 @@
         <%- include('../views/partials/header'); %>
     </header>
 
+        <div class="container-fluid px-5 py-3">
+        <h1>Find Student</h1>
+        <form onsubmit="findStudent(); return false">
+            <label for="id"><b>Student ID:</b></label><br>
+            <input type="text" id="id" name="id" required><br><br>
+
+            <input type="submit" value="Submit">
+
+            <div id="response-message"></div><br><br>
+            <div id="student-info"></div>
+        </form>
+    </div>
+
+    <!--AJAX Request-->
+    <script>
+        function findStudent() {
+            $.ajax({
+                url: '/students/' + $("#id").val(),
+                method: 'get',
+                success: function (res) {
+                    //Clear contents of both divs
+                    $("#response-message").html('');
+                    $("#student-info").html('');
+
+                    //Perform update
+                    parsedRes = JSON.parse(res);
+                    $("#student-info").append("<p>" + "<b>First name: </b>" + parsedRes.fname + "</p>");
+                    $("#student-info").append("<p>" + "<b>Last name: </b>" + parsedRes.lname + "</p>");
+                    $("#student-info").append("<p>" + "<b>GPA: </b>" + parsedRes.gpa + "</p>");
+                    boolToYesOrNo = parsedRes.enrolled === true ? "YES" : "NO";
+                    $("#student-info").append("<p>" + "<b>Currently enrolled: </b>" + boolToYesOrNo + "</p>");
+                },
+                error: function (xhr) {
+                    //Clear contents of both divs
+                    $("#response-message").html('');
+                    $("#student-info").html('');
+
+                    //Perform update
+                    $("#response-message").html(xhr.responseJSON.message);
+                }
+            })
+        }
+    </script>
+
     <footer>
         <%- include('../views/partials/footer.ejs'); %>
     </footer>

@@ -10,6 +10,54 @@
         <%- include('../views/partials/header'); %>
     </header>
 
+        <div class="container-fluid px-5 py-3">
+        <h1>Update Student</h1>
+        <form onsubmit="updateStudent(); return false">
+            <label for="id"><b>Student ID:</b></label><br>
+            <input type="text" id="id" name="id" required><br><br>
+
+            <label for="fname"><b>First name:</b></label><br>
+            <input type="text" id="fname" name="fname" required><br><br>
+
+            <label for="lname"><b>Last name:</b></label><br>
+            <input type="text" id="lname" name="lname" required><br><br>
+
+            <label for="gpa"><b>GPA:</b></label><br>
+            <input type="number" id="gpa" name="gpa" min="0" max="4" step="0.1" required><br><br>
+
+            <label for="enrolled"><b>Currently enrolled?</b></label><br>
+            <input type="radio" id="is-enrolled" name="enrolled" value="YES" required>
+            <label for="is-enrolled">YES</label>
+            <input type="radio" id="is-not-enrolled" name="enrolled" value="NO" required>
+            <label for="is-not-enrolled">NO</label><br><br>
+
+            <input type="submit" value="Submit">
+
+            <div id="response-message"></div>
+        </form>
+    </div>
+
+    <script>
+        function updateStudent() {
+            $.ajax({
+                url: '/students/' + $("#id").val(),
+                method: 'put',
+                data: {
+                    fname: $("#fname").val(),
+                    lname: $("#lname").val(),
+                    gpa: $("#gpa").val(),
+                    enrolled: $("input[name='enrolled']:checked").val() == "YES" ? true : false
+                },
+                success: function (res) {
+                    $("#response-message").html(res.message);
+                },
+                error: function (xhr) {
+                    $("#response-message").html(xhr.responseJSON.message);
+                }
+            })
+        }
+    </script>
+
     <footer>
         <%- include('../views/partials/footer.ejs'); %>
     </footer>

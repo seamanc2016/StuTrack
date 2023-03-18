@@ -10,6 +10,34 @@
         <%- include('../views/partials/header'); %>
     </header>
 
+    <div class="container-fluid px-5 py-3">
+        <h1>Delete Student</h1>
+        <form onsubmit="deleteStudent(); return false">
+            <label for="id"><b>Student ID:</b></label><br>
+            <input type="text" id="id" name="id" required><br><br>
+
+            <input type="submit" value="Submit">
+
+            <div id="response-message"></div>
+        </form>
+    </div>
+
+    <!--AJAX Request-->
+    <script>
+        function deleteStudent() {
+            $.ajax({
+                url: '/students/' + $("#id").val(),
+                method: 'delete',
+                success: function (res) {
+                    $("#response-message").html(res.message);
+                },
+                error: function (xhr) {
+                    $("#response-message").html(xhr.responseJSON.message);
+                }
+            })
+        }
+    </script>
+    
     <footer>
         <%- include('../views/partials/footer.ejs'); %>
     </footer>
