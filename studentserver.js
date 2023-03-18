@@ -6,6 +6,9 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const glob = require("glob");
 const path = require("path");
+const MongoClient = require('mongodb').MongoClient;
+const config = require('./config.js');
+const uri = `mongodb+srv://${config.db.user}:${config.db.pass}@${config.db.host}/?retryWrites=true&w=majority`
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -231,5 +234,5 @@ app.get("/", function(req, res) {
   res.render(path.join(__dirname, 'views/index.ejs'), {pageName: 'home'})
 })
 
-app.listen(5678); //start the server
+app.listen(config.server.port); //start the server
 console.log('Server is running...');
