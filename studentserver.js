@@ -30,48 +30,49 @@ app.set("view engine", "ejs");
 * @param {string} Request.body.lname - The student's last name. 
 * @param {string} Request.body.gpa - The student's GPA. 
 * @param {boolean} Request.body.enrolled - The student's enrollement status. 
-* @return {Response} Status 201 on success. Status 200/500 on failure.
+* @return {Response} Status 200 on successful creation. Status 204/208 on creation failures.
 */
 app.post('/students', function (req, res) {
   var id = new Date().getTime();
-
   var obj = {};
+
+  //Create student object
   obj._id = String(id);
   obj.fname = req.body.fname;
   obj.lname = req.body.lname;
   obj.gpa = req.body.gpa;
   obj.enrolled = req.body.enrolled === "true" ? true : false;
 
-  async function addStudent(doc) {
-    //Get collection instance
-    const coll = client.db(config.db.name).collection(config.db.collection);
+  //Get collection instance
+  const coll = client.db(config.db.name).collection(config.db.collection);
 
-    //Check if document with same full name already exists
-    query = {
-      $and: [
-        {fname: doc.fname},
-        {lname: doc.lname}
-      ]
-    }
-    const findResult = await coll.findOne(query);
-    if (findResult != null) {
-      return res.status(208).send({ message: `Record not created. A record for ${doc.fname} ${doc.lname} already exists.` });
-    }
-
-    //Insert document into collection
-    coll.insertOne(doc)
-      .then(
-        (resolve) => {
-          return res.status(200).send({ message: `New record created for ${doc.fname} ${doc.lname}.` });
-        },
-        (error) => {
-          return res.status(204).send({ message: `Unable to create record. Please try again later.` });
-        }
-      )
+  //Check if document with same full name already exists
+  query = {
+    $and: [
+      { fname: obj.fname },
+      { lname: obj.lname }
+    ]
   }
-
-  addStudent(obj);
-
+  coll.findOne(query)
+    .then(
+      (findResult) => {
+        if (findResult != null) {
+          return res.status(208).send({ message: `A record for ${obj.fname} ${obj.lname} already exists.` });
+        }
+        else {
+          //Insert document into collection
+          coll.insertOne(obj)
+            .then(
+              (resolve) => {
+                return res.status(200).send({ message: `New record created for ${obj.fname} ${obj.lname}.` });
+              },
+              (error) => {
+                return res.status(204).send({ message: `Unable to create record. Please try again later.` });
+              }
+            );
+        }
+      }
+    );
 }); //end post method
 
 
