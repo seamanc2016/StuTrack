@@ -150,48 +150,47 @@ app.get('/students', function (req, res) {
 * @param {string} Request.body.lname - The student's last name. 
 * @param {string} Request.body.gpa - The student's GPA. 
 * @param {boolean} Request.body.enrolled - The student's enrollement status.
-* @returns {Response} Status 201 on success. Status 200/400 on failure.
+* @returns {Response} Status 201 on update success. Status 206 on update failure. Status 500 on server error.
 */
 app.put('/students/:id', function (req, res) {
   var id = req.params.id;
-  var fname = "students/" + id + ".json";
-  var rsp_obj = {};
   var obj = {};
 
-  obj.id = id;
+  //Create student object
+  obj._id = id;
   obj.fname = req.body.fname;
   obj.lname = req.body.lname;
   obj.gpa = req.body.gpa;
-  obj.enrolled = req.body.enrolled === "true" ? true : false;;
+  obj.enrolled = req.body.enrolled === "true" ? true : false;
 
-  var str = JSON.stringify(obj, null, 2);
+  //Get collection instance
+  const coll = client.db(config.db.name).collection(config.db.collection);
 
-  //check if file exists
-  fs.stat(fname, function (err) {
-    if (err == null) {
-
-      //file exists
-      fs.writeFile("students/" + id + ".json", str, function (err) {
-        var rsp_obj = {};
-        if (err) {
-          rsp_obj.id = id;
-          rsp_obj.message = 'error - unable to update resource';
-          return res.status(200).send(rsp_obj);
-        } else {
-          rsp_obj.id = id;
-          rsp_obj.message = 'successfully updated';
-          return res.status(201).send(rsp_obj);
-        }
-      });
-
-    } else {
-      rsp_obj.id = id;
-      rsp_obj.message = 'error - resource not found';
-      return res.status(404).send(rsp_obj);
+  //Update the document that matches the passed student ID
+  const filter = {
+    _id: obj._id,
+  };
+  const update = {
+    $set: {
+      fname: obj.fname,
+      lname: obj.lname,
+      gpa: obj.gpa,
+      enrolled: obj.enrolled,
     }
+  }
 
-  });
-
+  coll.updateOne(filter, update)
+    .then(
+      (resolve) => {
+        if (resolve.matchedCount == 0)
+          return res.status(206).send({ message: `There is no record belonging to ID: ${obj._id}` });
+        else
+          return res.status(201).send({ message: `Record belonging to ID: ${obj._id} updated.` });
+      },
+      (error) => {
+        return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
+      }
+    );
 }); //end put method
 
 
