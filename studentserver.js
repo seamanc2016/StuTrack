@@ -198,24 +198,30 @@ app.put('/students/:id', function (req, res) {
 * DELETE - Deletes a student resource.
 * @method /students/:id
 * @param {string} Request.params.id - The student's ID. 
-* @return {Response} Status 200 on success. Status 404 on failure.
+* @return {Response} Status 200 on deletion success. Status 206 on deletion failure. Status 500 on server error.
 */
 app.delete('/students/:id', function (req, res) {
   var id = req.params.id;
-  var fname = "students/" + id + ".json";
 
-  fs.unlink(fname, function (err) {
-    var rsp_obj = {};
-    if (err) {
-      rsp_obj.id = id;
-      rsp_obj.message = 'error - resource not found';
-      return res.status(404).send(rsp_obj);
-    } else {
-      rsp_obj.id = id;
-      rsp_obj.message = 'record deleted';
-      return res.status(200).send(rsp_obj);
-    }
-  });
+  //Get collection instance
+  const coll = client.db(config.db.name).collection(config.db.collection);
+
+  //Delete the document that matches the passed student ID
+  const filter = {
+    _id: id,
+  };
+  coll.deleteOne(filter)
+    .then(
+      (resolve) => {
+        if (resolve.deletedCount == 0)
+          return res.status(206).send({ message: `There is no record belonging to ID: ${id}` });
+        else
+          return res.status(200).send({ message: `Record belonging to ID: ${id} deleted.` });
+      },
+      (error) => {
+        return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
+      }
+    );
 
 }); //end delete method
 
