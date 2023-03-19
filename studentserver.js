@@ -3,17 +3,25 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const glob = require("glob");
+const fs = require('fs'); //Obsolete
+const glob = require("glob"); //Obsolete
 const path = require("path");
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const config = require('./config.js');
-const uri = `mongodb+srv://${config.db.user}:${config.db.pass}@${config.db.host}/?retryWrites=true&w=majority`
+const uri = `mongodb+srv://${config.db.user}:${config.db.pass}@${config.db.host}/?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.set("view engine","ejs");
+app.set("view engine", "ejs");
 
 /** 
 * POST - Creates a student resource.
@@ -24,41 +32,46 @@ app.set("view engine","ejs");
 * @param {boolean} Request.body.enrolled - The student's enrollement status. 
 * @return {Response} Status 201 on success. Status 200/500 on failure.
 */
-app.post('/students', function(req, res) {
+app.post('/students', function (req, res) {
   var id = new Date().getTime();
 
   var obj = {};
-  obj.id = String(id);
+  obj._id = String(id);
   obj.fname = req.body.fname;
   obj.lname = req.body.lname;
   obj.gpa = req.body.gpa;
   obj.enrolled = req.body.enrolled === "true" ? true : false;
 
-  var str = JSON.stringify(obj, null, 2);
+  async function addStudent(doc) {
+    //Get collection instance
+    const coll = client.db(config.db.name).collection(config.db.collection);
 
-  fs.mkdir("students", {recursive:true}, (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error creating directory");
+    //Check if document with same full name already exists
+    query = {
+      $and: [
+        {fname: doc.fname},
+        {lname: doc.lname}
+      ]
     }
-  })
-
-
-  fs.writeFile("students/" + id + ".json", str, function(err) {
-    var rsp_obj = {};
-    if(err) {
-      rsp_obj.id = -1;
-      rsp_obj.message = 'error - unable to create resource';
-      return res.status(200).send(rsp_obj);
-    } else {
-      rsp_obj.id = id;
-      rsp_obj.message = 'successfully created';
-      return res.status(201).send(rsp_obj);
+    const findResult = await coll.findOne(query);
+    if (findResult != null) {
+      return res.status(208).send({ message: `Record not created. A record for ${doc.fname} ${doc.lname} already exists.` });
     }
-  }); //end writeFile method
 
+    //Insert document into collection
+    coll.insertOne(doc)
+      .then(
+        (resolve) => {
+          return res.status(200).send({ message: `New record created for ${doc.fname} ${doc.lname}.` });
+        },
+        (error) => {
+          return res.status(204).send({ message: `Unable to create record. Please try again later.` });
+        }
+      )
+  }
 
-  
+  addStudent(obj);
+
 }); //end post method
 
 
@@ -68,10 +81,10 @@ app.post('/students', function(req, res) {
 * @param {string} Request.params.id The student's ID.
 * @return {Response} Status 200 on success. Status 404 on failure.
 */
-app.get('/students/:id', function(req, res) {
+app.get('/students/:id', function (req, res) {
   var id = req.params.id;
 
-  fs.readFile("students/" + id + ".json", "utf8", function(err, data) {
+  fs.readFile("students/" + id + ".json", "utf8", function (err, data) {
     if (err) {
       var rsp_obj = {};
       rsp_obj.id = id;
@@ -81,15 +94,15 @@ app.get('/students/:id', function(req, res) {
       return res.status(200).send(data);
     }
   });
-}); 
+});
 
-function readFiles(files,arr,res) {
+function readFiles(files, arr, res) {
   fname = files.pop();
   if (!fname)
     return;
-  fs.readFile(fname, "utf8", function(err, data) {
+  fs.readFile(fname, "utf8", function (err, data) {
     if (err) {
-      return res.status(500).send({"message":"error - internal server error"});
+      return res.status(500).send({ "message": "error - internal server error" });
     } else {
       arr.push(JSON.parse(data));
       if (files.length == 0) {
@@ -98,10 +111,10 @@ function readFiles(files,arr,res) {
         obj.message = "No data found";
         return res.status(200).send(obj);
       } else {
-        readFiles(files,arr,res);
+        readFiles(files, arr, res);
       }
     }
-  });  
+  });
 }
 
 /** 
@@ -109,14 +122,14 @@ function readFiles(files,arr,res) {
 * @method /students
 * @return {Response} Status 200 on success. Status 500 on failure.
 */
-app.get('/students', function(req, res) {
+app.get('/students', function (req, res) {
   var obj = {};
   var arr = [];
   filesread = 0;
 
   glob("students/*.json", null, function (err, files) {
     if (err) {
-      return res.status(500).send({"message":"error - internal server error"});
+      return res.status(500).send({ "message": "error - internal server error" });
     }
 
     if (files.length == 0) {
@@ -124,7 +137,7 @@ app.get('/students', function(req, res) {
       obj.message = "No data found";
       return res.status(200).send(obj);
     }
-    readFiles(files,[],res);
+    readFiles(files, [], res);
   });
 
 });
@@ -140,7 +153,7 @@ app.get('/students', function(req, res) {
 * @param {boolean} Request.body.enrolled - The student's enrollement status.
 * @returns {Response} Status 201 on success. Status 200/400 on failure.
 */
-app.put('/students/:id', function(req, res) {
+app.put('/students/:id', function (req, res) {
   var id = req.params.id;
   var fname = "students/" + id + ".json";
   var rsp_obj = {};
@@ -155,13 +168,13 @@ app.put('/students/:id', function(req, res) {
   var str = JSON.stringify(obj, null, 2);
 
   //check if file exists
-  fs.stat(fname, function(err) {
-    if(err == null) {
+  fs.stat(fname, function (err) {
+    if (err == null) {
 
       //file exists
-      fs.writeFile("students/" + id + ".json", str, function(err) {
+      fs.writeFile("students/" + id + ".json", str, function (err) {
         var rsp_obj = {};
-        if(err) {
+        if (err) {
           rsp_obj.id = id;
           rsp_obj.message = 'error - unable to update resource';
           return res.status(200).send(rsp_obj);
@@ -171,7 +184,7 @@ app.put('/students/:id', function(req, res) {
           return res.status(201).send(rsp_obj);
         }
       });
-      
+
     } else {
       rsp_obj.id = id;
       rsp_obj.message = 'error - resource not found';
@@ -189,11 +202,11 @@ app.put('/students/:id', function(req, res) {
 * @param {string} Request.params.id - The student's ID. 
 * @return {Response} Status 200 on success. Status 404 on failure.
 */
-app.delete('/students/:id', function(req, res) {
+app.delete('/students/:id', function (req, res) {
   var id = req.params.id;
   var fname = "students/" + id + ".json";
 
-  fs.unlink(fname, function(err) {
+  fs.unlink(fname, function (err) {
     var rsp_obj = {};
     if (err) {
       rsp_obj.id = id;
@@ -210,28 +223,28 @@ app.delete('/students/:id', function(req, res) {
 
 
 //Frontend endpoints
-app.get("/add", function(req, res) {
-  res.render(path.join(__dirname, 'views/addStudent.ejs'), {pageName: 'add'})
+app.get("/add", function (req, res) {
+  res.render(path.join(__dirname, 'views/addStudent.ejs'), { pageName: 'add' })
 })
 
-app.get("/update", function(req, res) {
-  res.render(path.join(__dirname, 'views/updateStudent.ejs'), {pageName: 'update'})
+app.get("/update", function (req, res) {
+  res.render(path.join(__dirname, 'views/updateStudent.ejs'), { pageName: 'update' })
 })
 
-app.get("/delete", function(req, res) {
-  res.render(path.join(__dirname, 'views/deleteStudent.ejs'), {pageName: 'delete'})
+app.get("/delete", function (req, res) {
+  res.render(path.join(__dirname, 'views/deleteStudent.ejs'), { pageName: 'delete' })
 })
 
-app.get("/find", function(req, res) {
-  res.render(path.join(__dirname, 'views/displayStudent.ejs'), {pageName: 'find'})
+app.get("/find", function (req, res) {
+  res.render(path.join(__dirname, 'views/displayStudent.ejs'), { pageName: 'find' })
 })
 
-app.get("/all", function(req, res) {
-  res.render(path.join(__dirname, 'views/listStudents.ejs'), {pageName: 'all'})
+app.get("/all", function (req, res) {
+  res.render(path.join(__dirname, 'views/listStudents.ejs'), { pageName: 'all' })
 })
 
-app.get("/", function(req, res) {
-  res.render(path.join(__dirname, 'views/index.ejs'), {pageName: 'home'})
+app.get("/", function (req, res) {
+  res.render(path.join(__dirname, 'views/index.ejs'), { pageName: 'home' })
 })
 
 app.listen(config.server.port); //start the server
