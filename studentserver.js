@@ -28,7 +28,7 @@ app.set("view engine", "ejs");
 * @param {string} Request.body.lname - The student's last name. 
 * @param {string} Request.body.gpa - The student's GPA. 
 * @param {boolean} Request.body.enrolled - The student's enrollement status. 
-* @return {Response} Status 200 on successful creation. Status 204/208 on creation failures.
+* @return {Response} Status 201 on successful creation. Status 204/208 on creation failures.
 */
 app.post('/students', function (req, res) {
   var id = new Date().getTime();
@@ -62,7 +62,7 @@ app.post('/students', function (req, res) {
           coll.insertOne(obj)
             .then(
               (resolve) => {
-                return res.status(200).send({ message: `New record created for ${obj.fname} ${obj.lname}.` });
+                return res.status(201).send({ message: `New record created for ${obj.fname} ${obj.lname}.` });
               },
               (error) => {
                 return res.status(204).send({ message: `Unable to create record. Please try again later.` });
