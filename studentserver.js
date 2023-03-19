@@ -3,8 +3,6 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const fs = require('fs'); //Obsolete
-const glob = require("glob"); //Obsolete
 const path = require("path");
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const config = require('./config.js');
