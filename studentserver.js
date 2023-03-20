@@ -78,21 +78,29 @@ app.post('/students', function (req, res) {
 * GET - Retrieves a student resource by ID.
 * @method /students/:id
 * @param {string} Request.params.id The student's ID.
-* @return {Response} Status 200 on success. Status 404 on failure.
+* @return {Response} Status 200 on retrieval success. Status 500 on server error.
 */
 app.get('/students/:id', function (req, res) {
   var id = req.params.id;
 
-  fs.readFile("students/" + id + ".json", "utf8", function (err, data) {
-    if (err) {
-      var rsp_obj = {};
-      rsp_obj.id = id;
-      rsp_obj.message = 'error - resource not found';
-      return res.status(404).send(rsp_obj);
-    } else {
-      return res.status(200).send(data);
-    }
-  });
+  //Get collection instance
+  const coll = client.db(config.db.name).collection(config.db.collection);
+
+  //Get the document that matches the passed student ID
+  query = { _id: { $eq: id } };
+  coll.findOne(query)
+    .then(
+      (findResult) => {
+        if (findResult != null) {
+          return res.status(200).send(findResult);
+        }
+        else {
+          return res.status(200).send({ message: `There is no record belonging to ID: ${id}` });
+        }
+      },
+      (error) => {
+        return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
+      });
 });
 
 function readFiles(files, arr, res) {
