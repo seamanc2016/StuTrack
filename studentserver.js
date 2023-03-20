@@ -36,8 +36,8 @@ app.post('/students', function (req, res) {
 
   //Create student object
   obj._id = String(id);
-  obj.fname = req.body.fname;
-  obj.lname = req.body.lname;
+  obj.fname = req.body.fname.toUpperCase();
+  obj.lname = req.body.lname.toUpperCase();
   obj.gpa = req.body.gpa;
   obj.enrolled = req.body.enrolled === "true" ? true : false;
 
@@ -140,8 +140,8 @@ app.put('/students/:id', function (req, res) {
 
   //Create student object
   obj._id = id;
-  obj.fname = req.body.fname;
-  obj.lname = req.body.lname;
+  obj.fname = req.body.fname.toUpperCase();
+  obj.lname = req.body.lname.toUpperCase();
   obj.gpa = req.body.gpa;
   obj.enrolled = req.body.enrolled === "true" ? true : false;
 
