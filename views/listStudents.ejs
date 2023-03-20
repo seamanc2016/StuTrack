@@ -21,12 +21,12 @@
                 url: '/students',
                 method: 'get',
                 success: function (res) {
-                    if(res.students.length == 0) {
+                    if(res.length == 0) {
                         $("#all-student-info").append("<b>" + res.message + "</b>");
                         return;
                     }
                     count = 1;
-                    res.students.forEach(student => {
+                    res.forEach(student => {
                         $("#all-student-info").append("<h3>" + "Student # " + count + "</h3>");
                         $("#all-student-info").append("<p>" + "<b>First name: </b>" + student.fname + "</p>");
                         $("#all-student-info").append("<p>" + "<b>Last name: </b>" + student.lname + "</p>");

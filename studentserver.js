@@ -78,7 +78,7 @@ app.post('/students', function (req, res) {
 * GET - Retrieves a student resource by ID.
 * @method /students/:id
 * @param {string} Request.params.id The student's ID.
-* @return {Response} Status 200 on retrieval success. Status 500 on server error.
+* @return {Response} Status 200/304 on retrieval success. Status 500 on server error.
 */
 app.get('/students/:id', function (req, res) {
   var id = req.params.id;
@@ -106,26 +106,21 @@ app.get('/students/:id', function (req, res) {
 /** 
 * GET - Retrieve all student resources.
 * @method /students
-* @return {Response} Status 200 on success. Status 500 on failure.
+* @return {Response} Status 200/304 on retrieval success. Status 500 on server error.
 */
 app.get('/students', function (req, res) {
-  var obj = {};
-  var arr = [];
-  filesread = 0;
+  //Get collection instance
+  const coll = client.db(config.db.name).collection(config.db.collection);
 
-  glob("students/*.json", null, function (err, files) {
-    if (err) {
-      return res.status(500).send({ "message": "error - internal server error" });
-    }
-
-    if (files.length == 0) {
-      obj.students = arr;
-      obj.message = "No data found";
-      return res.status(200).send(obj);
-    }
-    readFiles(files, [], res);
-  });
-
+  //Gett all documents
+  coll.find({}).toArray()
+    .then(
+      (findResult) => {
+          return res.status(200).send(findResult);
+      },
+      (error) => {
+        return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
+      });
 });
 
 
