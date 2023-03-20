@@ -10,18 +10,36 @@
         <%- include('../views/partials/header'); %>
     </header>
 
-        <div class="container-fluid px-5 py-3">
-        <h1>All Students</h1>
-        <div id="all-student-info"></div>
+    <div class="container-fluid px-5 py-3">
+        <h1 class="text-center">All Students</h1>
+        <form onsubmit="search(); return false">
+            <div class="row justify-content-center">
+                <div class="col-4">
+                    <input type="text" name="fname" class="form-control" placeholder="First name">
+                </div>
+                <div class="col-4">
+                    <input type="text" name="lname" class="form-control" placeholder="Last name">
+                </div>
+                <div class="col-1">
+                    <input class="btn btn-dark" type="submit" value="Search">
+                </div>
+            </div>
+        </form>
+        <div class="py-3" id="all-student-info">
+            <p class="text-center">
+                Enter a first and/or last name to search for a student. Clicking the search bar with both fields empty lists
+                all students.
+            </p>
+        </div>
     </div>
 
     <script>
-        $(document).ready(() => {
+        function search() {
             $.ajax({
                 url: '/students',
                 method: 'get',
                 success: function (res) {
-                    if(res.length == 0) {
+                    if (res.length == 0) {
                         $("#all-student-info").append("<b>" + res.message + "</b>");
                         return;
                     }
@@ -40,9 +58,9 @@
                     $("#all-student-info").html(xhr.responseJSON.message);
                 }
             })
-        });
+        }
     </script>
-    
+
     <footer>
         <%- include('../views/partials/footer.ejs'); %>
     </footer>
