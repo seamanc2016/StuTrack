@@ -11,6 +11,6 @@ This project is a student registry app created with Bootstrap as the frontend an
 - MongoDB integrated as database for the application.
 - Webpages are now rendered using EJS.
 - Unnecessary packages were removed (glob)
-- Unecessary code culled (includes all related to previous storage system, like fs for example)
+- Unnecessary code culled (includes all related to previous storage system, like fs for example)
 
 **Other than that, the functionality of the application is still the same.**
