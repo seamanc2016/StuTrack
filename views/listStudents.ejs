@@ -15,22 +15,22 @@
         <form onsubmit="search(); return false">
             <div class="row justify-content-center">
                 <div class="col-4">
-                    <input type="text" name="fname" class="form-control" placeholder="First name">
+                    <input type="text" id="fname" name="fname" class="form-control" placeholder="First name">
                 </div>
                 <div class="col-4">
-                    <input type="text" name="lname" class="form-control" placeholder="Last name">
+                    <input type="text" id="lname" name="lname" class="form-control" placeholder="Last name">
                 </div>
                 <div class="col-1">
                     <input class="btn btn-dark" type="submit" value="Search">
                 </div>
             </div>
         </form>
-        <div class="py-3" id="all-student-info">
-            <p class="text-center">
-                Enter a first and/or last name to search for a student. Clicking the search bar with both fields empty lists
-                all students.
-            </p>
-        </div>
+        <p class="text-center">
+            Enter a first and/or last name to search for a student. Clicking the search bar with both fields empty
+            lists
+            all students.
+        </p>
+        <div class="py-3" id="all-student-info"></div>
     </div>
 
     <script>
@@ -38,9 +38,17 @@
             $.ajax({
                 url: '/students',
                 method: 'get',
+                data: {
+                    fname: $("#fname").val(),
+                    lname: $("#lname").val()
+                },
                 success: function (res) {
+                    //Clear div contents
+                    $("#all-student-info").html('');
+
+                    //Show new info
                     if (res.length == 0) {
-                        $("#all-student-info").append("<b>" + res.message + "</b>");
+                        $("#all-student-info").append("<b>" + "No student record matching query." + "</b>");
                         return;
                     }
                     count = 1;
@@ -55,6 +63,10 @@
                     });
                 },
                 error: function (xhr) {
+                    //Clear div contents
+                    $("#all-student-info").html('');
+
+                    //Show new info
                     $("#all-student-info").html(xhr.responseJSON.message);
                 }
             })

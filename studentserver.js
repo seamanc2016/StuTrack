@@ -104,19 +104,39 @@ app.get('/students/:id', function (req, res) {
 });
 
 /** 
-* GET - Retrieve all student resources.
+* GET - List and search through student resources.
 * @method /students
+* @param {string} Request.query.fname - The student's first name. 
+* @param {string} Request.query.lname - The student's last name. 
 * @return {Response} Status 200/304 on retrieval success. Status 500 on server error.
 */
 app.get('/students', function (req, res) {
+  //Getting params
+  var fname = req.query.fname.toUpperCase();
+  var lname = req.query.lname.toUpperCase();
+
   //Get collection instance
   const coll = client.db(config.db.name).collection(config.db.collection);
 
-  //Gett all documents
-  coll.find({}).toArray()
+  //Generate query object if...
+  //only first name sent
+  if (fname != "" && lname == "")
+    var query = { fname: fname };
+  //only last name sent
+  else if (fname == "" && lname != "")
+    var query = { lname: lname };
+  //full name sent
+  else if (fname != "" && lname != "")
+    var query = { $and: [{ fname: fname }, { lname: lname }] };
+  //neither a first name nor a last name was sent
+  else
+    var query = {};
+
+  //Get all documents based on query and return them in response.
+  coll.find(query).toArray()
     .then(
       (findResult) => {
-          return res.status(200).send(findResult);
+        return res.status(200).send(findResult);
       },
       (error) => {
         return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
