@@ -4,11 +4,12 @@
 
 This project is a student registry app created with Bootstrap as the frontend and jQuery/ExpressJS as the backend. 
 
-![mongo-compass](/images/mongo-compass.png)
+![mongo-compass](/images/mongo-compass.PNG)
 
 
 ## Updates:
 - MongoDB integrated as database for the application.
+- Webpages are now rendered using EJS.
 - Unnecessary packages were removed (glob)
 - Unecessary code culled (includes all related to previous storage system, like fs for example)
 
