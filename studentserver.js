@@ -160,42 +160,38 @@ app.get('/students', function (req, res) {
 * @returns {Response} Status 201 on update success. Status 206 on update failure. Status 500 on server error.
 */
 app.put('/students/:id', function (req, res) {
+  //Get params and body vars
   var id = req.params.id;
-  var obj = {};
-
-  //Create student object
-  obj._id = id;
-  obj.fname = req.body.fname.toUpperCase();
-  obj.lname = req.body.lname.toUpperCase();
-  obj.gpa = req.body.gpa;
-  obj.enrolled = req.body.enrolled === "true" ? true : false;
+  var fname = req.body.fname.toUpperCase();
+  var lname = req.body.lname.toUpperCase();
+  var gpa = req.body.gpa;
+  var enrolled = req.body.enrolled === "true" ? true : false;
 
   //Get collection instance
   const coll = client.db(config.db.name).collection(config.db.collection);
 
-  //Update the document that matches the passed student ID
-  const filter = {
-    _id: obj._id,
-  };
-  const update = {
+  //Setting MongoDB updateOne parameters
+  const filter = { _id: id, }; //Filter by id
+  const update = { //Data to be updated
     $set: {
-      fname: obj.fname,
-      lname: obj.lname,
-      gpa: obj.gpa,
-      enrolled: obj.enrolled,
+      fname: fname,
+      lname: lname,
+      gpa: gpa,
+      enrolled: enrolled,
     }
   }
 
+  //Find the document matching the filter and update it
   coll.updateOne(filter, update)
     .then(
       (resolve) => {
-        if (resolve.matchedCount == 0)
-          return res.status(206).send({ message: `There is no record belonging to ID: ${obj._id}` });
-        else
-          return res.status(201).send({ message: `Record belonging to ID: ${obj._id} updated.` });
+        if (resolve.matchedCount == 0) //No record found
+          return res.status(206).send({ message: `There is no record belonging to ID: ${id}` });
+        else //Record was found
+          return res.status(201).send({ message: `Record belonging to ID: ${id} updated.` });
       },
       (error) => {
-        return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
+        return res.status(500).send(`${error}`); //server error
       }
     );
 }); //end put method
