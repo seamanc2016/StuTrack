@@ -28,7 +28,7 @@ app.set("view engine", "ejs");
 * @param {string} Request.body.lname - The student's last name. 
 * @param {string} Request.body.gpa - The student's GPA. 
 * @param {boolean} Request.body.enrolled - The student's enrollement status. 
-* @return {Response} Status 201 on successful creation. Status 204/208 on creation failures.
+* @return {Response} Status 201 on successful creation. Status 204/208 on creation failures. Status 500 on server error.
 */
 app.post('/students', function (req, res) {
   var id = new Date().getTime();
@@ -44,21 +44,20 @@ app.post('/students', function (req, res) {
   //Get collection instance
   const coll = client.db(config.db.name).collection(config.db.collection);
 
-  //Check if document with same full name already exists
-  query = {
-    $and: [
-      { fname: obj.fname },
-      { lname: obj.lname }
-    ]
-  }
+  //Generate the query object
+  query = { $and: [{ fname: obj.fname },{ lname: obj.lname }] };
+
+  //Determine if the document for that student already exists
   coll.findOne(query)
     .then(
-      (findResult) => {
+      (resolve) => {
+        //It already existed
+        var findResult = resolve;
         if (findResult != null) {
           return res.status(208).send({ message: `A record for ${obj.fname} ${obj.lname} already exists.` });
         }
         else {
-          //Insert document into collection
+          //It doesn't exist so insert document into collection
           coll.insertOne(obj)
             .then(
               (resolve) => {
@@ -69,7 +68,8 @@ app.post('/students', function (req, res) {
               }
             );
         }
-      }
+      },
+      (error) => { return res.status(500).send(`${error}`); } //Server error
     );
 }); //end post method
 
