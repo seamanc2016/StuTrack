@@ -204,25 +204,26 @@ app.put('/students/:id', function (req, res) {
 * @return {Response} Status 200 on deletion success. Status 206 on deletion failure. Status 500 on server error.
 */
 app.delete('/students/:id', function (req, res) {
+  //Get params
   var id = req.params.id;
 
   //Get collection instance
   const coll = client.db(config.db.name).collection(config.db.collection);
 
-  //Delete the document that matches the passed student ID
-  const filter = {
-    _id: id,
-  };
+  //Setting MongoDB deleteOne parameters
+  const filter = { _id: id, }; //Filter by id
+
+  //Find the document matching the filter and delete it
   coll.deleteOne(filter)
     .then(
       (resolve) => {
-        if (resolve.deletedCount == 0)
+        if (resolve.deletedCount == 0) //No document found
           return res.status(206).send({ message: `There is no record belonging to ID: ${id}` });
-        else
+        else //Document found
           return res.status(200).send({ message: `Record belonging to ID: ${id} deleted.` });
       },
       (error) => {
-        return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
+        return res.status(500).send(`${error}`); //server error
       }
     );
 
