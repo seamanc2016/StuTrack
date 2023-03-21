@@ -139,11 +139,12 @@ app.get('/students', function (req, res) {
   //Get all documents based on query and return them in response.
   coll.find(query).toArray()
     .then(
-      (findResult) => {
-        return res.status(200).send(findResult);
+      (resolve) => {
+        var findResult = resolve;
+        return res.status(200).send(findResult); //a match was found
       },
       (error) => {
-        return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
+        return res.status(500).send(`${error}`); //server error
       });
 });
 
