@@ -81,25 +81,29 @@ app.post('/students', function (req, res) {
 * @return {Response} Status 200/304 on retrieval success. Status 500 on server error.
 */
 app.get('/students/:id', function (req, res) {
+  //Get params
   var id = req.params.id;
 
   //Get collection instance
   const coll = client.db(config.db.name).collection(config.db.collection);
 
-  //Get the document that matches the passed student ID
+  //Generate the query object
   query = { _id: { $eq: id } };
+
+  //Get the document matching the query
   coll.findOne(query)
     .then(
-      (findResult) => {
+      (resolve) => {
+        var findResult = resolve;
         if (findResult != null) {
-          return res.status(200).send(findResult);
+          return res.status(200).send(findResult); //a match was found
         }
         else {
           return res.status(200).send({ message: `There is no record belonging to ID: ${id}` });
         }
       },
       (error) => {
-        return res.status(500).send({ message: `A server error occured when updating. Try again later.` });
+        return res.status(500).send(`${error}`); //server error
       });
 });
 
