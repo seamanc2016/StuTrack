@@ -119,10 +119,6 @@ app.get('/students/:id', function (req, res) {
 * @return {Response} Status 200/304 on retrieval success. Status 400 on client error. Status 500 on server error.
 */
 app.get('/students', function (req, res) {
-  //Handle null param case
-  if (req.query.fname == undefined || req.query.lname == undefined)
-    return res.status(400).send({ message: 'The query param(s) fname and/or lname is undefined.' });
-
   //Renaming params
   var fname = req.query.fname.toUpperCase();
   var lname = req.query.lname.toUpperCase();
