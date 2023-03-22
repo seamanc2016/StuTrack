@@ -28,9 +28,13 @@ app.set("view engine", "ejs");
 * @param {string} Request.body.lname - The student's last name. 
 * @param {string} Request.body.gpa - The student's GPA. 
 * @param {boolean} Request.body.enrolled - The student's enrollement status. 
-* @return {Response} Status 201 on successful creation. Status 204/208 on creation failures. Status 500 on server error.
+* @return {Response} Status 201 on successful creation. Status 204/208 on creation failures. Status 400 on client error. Status 500 on server error.
 */
 app.post('/students', function (req, res) {
+  //Handle undefined param/body vars
+  if (req.body.fname == undefined || req.body.lname == undefined || req.body.gpa == undefined || req.body.enrolled == undefined)
+    return res.status(400).send({ message: 'The body param(s) fname, lname, gpa and/or enrolled is/are undefined.' });
+
   var id = new Date().getTime();
   var obj = {};
 
@@ -45,7 +49,7 @@ app.post('/students', function (req, res) {
   const coll = client.db(config.db.name).collection(config.db.collection);
 
   //Generate the query object
-  query = { $and: [{ fname: obj.fname },{ lname: obj.lname }] };
+  query = { $and: [{ fname: obj.fname }, { lname: obj.lname }] };
 
   //Determine if the document for that student already exists
   coll.findOne(query)
@@ -112,10 +116,14 @@ app.get('/students/:id', function (req, res) {
 * @method /students
 * @param {string} Request.query.fname - The student's first name. 
 * @param {string} Request.query.lname - The student's last name. 
-* @return {Response} Status 200/304 on retrieval success. Status 500 on server error.
+* @return {Response} Status 200/304 on retrieval success. Status 400 on client error. Status 500 on server error.
 */
 app.get('/students', function (req, res) {
-  //Getting params
+  //Handle null param case
+  if (req.query.fname == undefined || req.query.lname == undefined)
+    return res.status(400).send({ message: 'The query param(s) fname and/or lname is undefined.' });
+
+  //Renaming params
   var fname = req.query.fname.toUpperCase();
   var lname = req.query.lname.toUpperCase();
 
@@ -157,9 +165,13 @@ app.get('/students', function (req, res) {
 * @param {string} Request.body.lname - The student's last name. 
 * @param {string} Request.body.gpa - The student's GPA. 
 * @param {boolean} Request.body.enrolled - The student's enrollement status.
-* @returns {Response} Status 201 on update success. Status 206 on update failure. Status 500 on server error.
+* @returns {Response} Status 201 on update success. Status 206 on update failure. Status 400 on client error. Status 500 on server error.
 */
 app.put('/students/:id', function (req, res) {
+  //Handle undefined param/body vars
+  if (req.body.fname == undefined || req.body.lname == undefined || req.body.gpa == undefined || req.body.enrolled == undefined)
+    return res.status(400).send({ message: 'The body param(s) fname, lname, gpa and/or enrolled is/are undefined.' });
+    
   //Get params and body vars
   var id = req.params.id;
   var fname = req.body.fname.toUpperCase();
