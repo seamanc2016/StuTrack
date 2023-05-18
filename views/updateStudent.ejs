@@ -10,7 +10,7 @@
         <%- include('../views/partials/header'); %>
     </header>
 
-        <div class="container-fluid px-5 py-3">
+    <div class="container-fluid px-5 py-3">
         <h1>Update Student</h1>
         <form onsubmit="updateStudent(); return false">
             <label for="id"><b>Student ID:</b></label><br>
@@ -45,14 +45,24 @@
                 data: {
                     fname: $("#fname").val(),
                     lname: $("#lname").val(),
-                    gpa: $("#gpa").val(),
+                    gpa: $("#gpa").val().length == 1 ? $("#gpa").val() + ".0" : $("#gpa").val(),
                     enrolled: $("input[name='enrolled']:checked").val() == "YES" ? true : false
                 },
                 success: function (res) {
-                    $("#response-message").html(res.message);
+                    //Clear form
+                    $("#id").val("");
+                    $("#fname").val("");
+                    $("#lname").val("");
+                    $("#gpa").val("");
+                    $("input[name='enrolled']").prop('checked', false);
+
+                    //Show response message
+                    $("#response-message").css('color', 'green');
+                    $("#response-message").html("<b>" + res.message + "</b>");
                 },
                 error: function (xhr) {
-                    $("#response-message").html(xhr.responseJSON.message);
+                    $("#response-message").css('color', 'red');
+                    $("#response-message").html("<b>" + xhr.responseJSON.message + "</b>");
                 }
             })
         }
