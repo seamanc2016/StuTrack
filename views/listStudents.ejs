@@ -30,7 +30,22 @@
             lists
             all students.
         </p>
-        <div class="py-3" id="all-student-info"></div>
+        <div class="text-center" id="response-message"></div><br><br>
+        <div class="py-3" id="all-student-info-table" hidden>
+            <table class="table table-striped table-light">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">First Name</th>
+                        <th scope="col">Last Name</th>
+                        <th scope="col">GPA</th>
+                        <th scope="col">Currently Enrolled?</th>
+                    </tr>
+                </thead>
+                <tbody id="all-student-info"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -43,31 +58,57 @@
                     lname: $("#lname").val()
                 },
                 success: function (res) {
-                    //Clear div contents
+                    //Clear element contents
+                    $("#response-message").html('');
                     $("#all-student-info").html('');
 
-                    //Show new info
+                    //Hide table
+                    $("#all-student-info-table").attr("hidden", true);
+
+                    //If the response was succesful but no data was found
                     if (res.length == 0) {
-                        $("#all-student-info").append("<b>" + "No student record matching query." + "</b>");
+                        var query = $("#fname").val() + " " + $("#lname").val();
+                        $("#response-message").css('color', 'green');
+                        $("#response-message").append("<b>" + `No student record matching query: ${query}` + "</b>");
                         return;
                     }
-                    count = 1;
-                    res.forEach(student => {
-                        $("#all-student-info").append("<h3>" + "Student # " + count + "</h3>");
-                        $("#all-student-info").append("<p>" + "<b>First name: </b>" + student.fname + "</p>");
-                        $("#all-student-info").append("<p>" + "<b>Last name: </b>" + student.lname + "</p>");
-                        $("#all-student-info").append("<p>" + "<b>GPA: </b>" + student.gpa + "</p>");
-                        boolToYesOrNo = student.enrolled === true ? "YES" : "NO";
-                        $("#all-student-info").append("<p>" + "<b>Currently enrolled: </b>" + boolToYesOrNo + "</p><br><br>");
-                        count++;
-                    });
+
+                    //Else if the response was succesful and data was found
+                    else {
+                        //Populate the table with the response data
+                        res.forEach((student, index) => {
+                            //Create new empty table row
+                            var row = $("<tr>")
+
+                            //Add data to the table row
+                            $(row).append("<td>" + `${index + 1}` + "</td>");
+                            $(row).append("<td>" + student._id + "</td>");
+                            $(row).append("<td>" + student.fname + "</td>");
+                            $(row).append("<td>" + student.lname + "</td>");
+                            $(row).append("<td>" + student.gpa + "</td>");
+                            boolToYesOrNo = student.enrolled === true ? "YES" : "NO";
+                            $(row).append("<td>" + boolToYesOrNo + "</td>");
+
+                            //Append it to the table
+                            $("#all-student-info").append(row);
+                        });
+
+                        //Show table
+                        $("#all-student-info-table").attr("hidden", false);
+                    }
+
                 },
                 error: function (xhr) {
-                    //Clear div contents
+                    //Clear element contents
+                    $("#response-message").html('');
                     $("#all-student-info").html('');
 
-                    //Show new info
-                    $("#all-student-info").html(xhr.responseJSON.message);
+                    //Hide table
+                    $("#all-student-info-table").attr("hidden", true);
+
+                    //Show error message
+                    $("#response-message").css('color', 'red');
+                    $("#response-message").html(xhr.responseJSON.message);
                 }
             })
         }

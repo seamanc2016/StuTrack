@@ -29,10 +29,12 @@
                 url: '/students/' + $("#id").val(),
                 method: 'delete',
                 success: function (res) {
-                    $("#response-message").html(res.message);
+                    $("#response-message").css('color', 'green');
+                    $("#response-message").html("<b>" + res.message + "</b>");
                 },
                 error: function (xhr) {
-                    $("#response-message").html(xhr.responseJSON.message);
+                    $("#response-message").css('color', 'red');
+                    $("#response-message").html("<b>" + xhr.responseJSON.message +"<b>");
                 }
             })
         }
