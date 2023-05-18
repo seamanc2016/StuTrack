@@ -28,7 +28,7 @@
             <input type="radio" id="is-not-enrolled" name="enrolled" value="NO" required>
             <label for="is-not-enrolled">NO</label><br><br>
 
-            <input type="submit" class="btn btn-dark"  value="Submit">
+            <input type="submit" class="btn btn-dark" value="Submit">
 
             <div id="response-message"></div>
         </form>
@@ -41,16 +41,34 @@
             data = {
                 fname: $("#fname").val(),
                 lname: $("#lname").val(),
-                gpa: $("#gpa").val(),
+                gpa: $("#gpa").val().length == 1 ? $("#gpa").val() + ".0" : $("#gpa").val(),
                 enrolled: $("input[name='enrolled']:checked").val() == "YES" ? true : false
             };
 
             $.post(url, data, function (res, status, xhr) {
-                $("#response-message").html(res.message);
+                //Post was succesful
+                if (status == "success") {
+                    //Clear form
+                    $("#fname").val("");
+                    $("#lname").val("");
+                    $("#gpa").val("");
+                    $("input[name='enrolled']").prop('checked', false);
+
+                    //Show response message
+                    $("#response-message").css('color', 'green');
+                    $("#response-message").html("<b>" + res.message + "</b>");
+                }
+
+                //Error occured; status = error
+                else {
+                    //Show error message
+                    $("#response-message").css('color', 'red');
+                    $("#response-message").html("<b>" + res.message + "</b>");
+                }
             })
         }
     </script>
-    
+
     <footer>
         <%- include('../views/partials/footer.ejs'); %>
     </footer>
