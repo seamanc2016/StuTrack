@@ -18,7 +18,7 @@ const client = new MongoClient(uri, {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'images')));
 app.set("view engine", "ejs");
 
 /** 
@@ -260,7 +260,7 @@ app.get("/all", function (req, res) {
 })
 
 app.get("/", function (req, res) {
-  res.render(path.join(__dirname, 'views/index.ejs'), { pageName: 'home' })
+  res.render(path.join(__dirname, 'views/index.ejs'), { pageName: 'home', classroomPNG: '/classroom.png'})
 })
 
 app.listen(config.server.port); //start the server
