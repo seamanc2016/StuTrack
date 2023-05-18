@@ -19,7 +19,21 @@
             <input type="submit" class="btn btn-dark"  value="Submit">
 
             <div id="response-message"></div><br><br>
-            <div id="student-info"></div>
+            <div id="student-info-table" hidden>
+                <table class="table table-striped table-light">
+                    <thead>
+                      <tr>
+                        <th scope="col">First Name</th>
+                        <th scope="col">Last Name</th>
+                        <th scope="col">GPA</th>
+                        <th scope="col">Currently Enrolled?</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr id="student-info"></tr>
+                    </tbody>
+                  </table>
+            </div>
         </form>
     </div>
 
@@ -30,21 +44,30 @@
                 url: '/students/' + $("#id").val(),
                 method: 'get',
                 success: function (res) {
-                    //Clear contents of both divs
+                    //Clear contents of elements
                     $("#response-message").html('');
                     $("#student-info").html('');
 
-                    //Perform update
+                    //Hide table
+                    $("#student-info-table").attr("hidden",true);
+
+                    //If a matching student record was found, add its data to the table
                     if (res.fname != null) {
-                        $("#student-info").append("<p>" + "<b>First name: </b>" + res.fname + "</p>");
-                        $("#student-info").append("<p>" + "<b>Last name: </b>" + res.lname + "</p>");
-                        $("#student-info").append("<p>" + "<b>GPA: </b>" + res.gpa + "</p>");
+                        //Add info
+                        $("#student-info").append("<td>" + res.fname + "</td>");
+                        $("#student-info").append("<td>" + res.lname + "</td>");
+                        $("#student-info").append("<td>" + res.gpa + "</td>");
                         boolToYesOrNo = res.enrolled === true ? "YES" : "NO";
-                        $("#student-info").append("<p>" + "<b>Currently enrolled: </b>" + boolToYesOrNo + "</p>");
+                        $("#student-info").append("<td>" + boolToYesOrNo + "</td>");
+
+                        //Show table
+                        $("#student-info-table").attr("hidden",false);
                     }
 
+                    //Else if a matching student record was not found, let the user know
                     else {
-                        $("#response-message").html(res.message);
+                        $("#response-message").css('color', 'green');
+                        $("#response-message").html("<b>" + res.message + "</b>");
                     }
 
                 },
@@ -53,7 +76,11 @@
                     $("#response-message").html('');
                     $("#student-info").html('');
 
-                    //Perform update
+                    //Hide table
+                    $("#student-info-table").attr("hidden",true);
+
+                    //Show error message
+                    $("#response-message").css('color', 'red');
                     $("#response-message").html(xhr.responseJSON.message);
                 }
             })
