@@ -1,12 +1,11 @@
 //studentserver.js
-
 const express = require('express');
 const app = express();
+const dotenv = require('dotenv').config('env');
 const bodyParser = require('body-parser');
 const path = require("path");
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const config = require('./config.js');
-const uri = `mongodb+srv://${config.db.user}:${config.db.pass}@${config.db.host}/?retryWrites=true&w=majority`;
+const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -14,6 +13,7 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
 
 
 app.use(bodyParser.json());
@@ -46,7 +46,7 @@ app.post('/students', function (req, res) {
   obj.enrolled = req.body.enrolled === "true" ? true : false;
 
   //Get collection instance
-  const coll = client.db(config.db.name).collection(config.db.collection);
+  const coll = client.db(process.env.MONGODB_DB_NAME).collection(process.env.MONGODB_COLL_NAME);
 
   //Generate the query object
   query = { $and: [{ fname: obj.fname }, { lname: obj.lname }] };
@@ -89,7 +89,7 @@ app.get('/students/:id', function (req, res) {
   var id = req.params.id;
 
   //Get collection instance
-  const coll = client.db(config.db.name).collection(config.db.collection);
+  const coll = client.db(process.env.MONGODB_DB_NAME).collection(process.env.MONGODB_COLL_NAME);
 
   //Generate the query object
   query = { _id: { $eq: id } };
@@ -124,7 +124,7 @@ app.get('/students', function (req, res) {
   var lname = req.query.lname.toUpperCase();
 
   //Get collection instance
-  const coll = client.db(config.db.name).collection(config.db.collection);
+  const coll = client.db(process.env.MONGODB_DB_NAME).collection(process.env.MONGODB_COLL_NAME);
 
   //Generate query object if...
   //only first name sent
@@ -176,7 +176,7 @@ app.put('/students/:id', function (req, res) {
   var enrolled = req.body.enrolled === "true" ? true : false;
 
   //Get collection instance
-  const coll = client.db(config.db.name).collection(config.db.collection);
+  const coll = client.db(process.env.MONGODB_DB_NAME).collection(process.env.MONGODB_COLL_NAME);
 
   //Setting MongoDB updateOne parameters
   const filter = { _id: id, }; //Filter by id
@@ -216,7 +216,7 @@ app.delete('/students/:id', function (req, res) {
   var id = req.params.id;
 
   //Get collection instance
-  const coll = client.db(config.db.name).collection(config.db.collection);
+  const coll = client.db(process.env.MONGODB_DB_NAME).collection(process.env.MONGODB_COLL_NAME);
 
   //Setting MongoDB deleteOne parameters
   const filter = { _id: id, }; //Filter by id
@@ -263,5 +263,5 @@ app.get("/", function (req, res) {
   res.render(path.join(__dirname, 'views/index.ejs'), { pageName: 'home', classroomPNG: '/classroom.png'})
 })
 
-app.listen(config.server.port); //start the server
+app.listen(process.env.PORT || 5678); //start the server
 console.log('Server is running...');
